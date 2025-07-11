@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - DevDoll</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f8e1e8 0%, #f0c4d1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* GIANT WHITE FLUFFY CLOUDS */
+        .cloud-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .cloud-column {
+            position: absolute;
+            bottom: -400px;
+            font-size: 300px;
+            color: rgba(255, 255, 255, 0.7);
+            animation: cloud-rise linear infinite;
+            text-shadow: 0 0 50px rgba(255, 255, 255, 0.9);
+            white-space: pre-line;
+            line-height: 0.8;
+        }
+
+        @keyframes cloud-rise {
+            0% { 
+                bottom: -400px;
+                opacity: 0;
+            }
+            15% {
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            100% { 
+                bottom: 120vh;
+                opacity: 0;
+            }
+        }
+
+        .top-banner {
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.4), rgba(255, 105, 180, 0.3));
+            text-align: center;
+            padding: 12px;
+            font-size: 13px;
+            color: #ff1493;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 182, 193, 0.1));
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff1493;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 10px rgba(255, 105, 180, 0.6);
+            order: 1;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            color: #ff69b4;
+            text-shadow: 0 0 20px rgba(255, 105, 180, 1);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+            order: 2;
+            margin: 0 20px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 25px;
+            font-size: 14px;
+            color: #8b4d6b;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            order: 3;
+        }
+
+        .back-btn {
+            background: linear-gradient(45deg, rgba(255, 20, 147, 0.1), rgba(255, 105, 180, 0.05));
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            color: #ff1493;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: linear-gradient(45deg, rgba(255, 20, 147, 0.2), rgba(255, 105, 180, 0.1));
+            border-color: #ff1493;
+            transform: translateX(-5px);
+        }
+
+        /* CART CONTAINER */
+        .cart-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .cart-main {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(255, 20, 147, 0.1);
+        }
+
+        .cart-title {
+            color: #ff1493;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .cart-count {
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        /* EMPTY CART */
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(139, 77, 107, 0.8);
+        }
+
+        .empty-cart-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .empty-cart h3 {
+            color: #ff1493;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .empty-cart p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .continue-shopping-btn {
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .continue-shopping-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.8);
+        }
+
+        /* CART ITEMS */
+        .cart-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto auto auto;
+            gap: 20px;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .cart-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 20, 147, 0.2);
+            border-color: rgba(255, 20, 147, 0.3);
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .item-name {
+            color: #ff1493;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .item-options {
+            color: rgba(139, 77, 107, 0.8);
+            font-size: 14px;
+        }
+
+        .item-price {
+            color: #ff1493;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            color: #ff1493;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qty-btn:hover {
+            background: rgba(255, 20, 147, 0.1);
+            color: #ff69b4;
+        }
+
+        .qty-input {
+            width: 40px;
+            text-align: center;
+            border: none;
+            background: none;
+            color: #ff1493;
+            font-weight: bold;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 107, 53, 0.8);
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .remove-btn:hover {
+            color: #ff6b35;
+            background: rgba(255, 107, 53, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* CART SIDEBAR */
+        .cart-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .cart-section {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .section-title {
+            color: #ff1493;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* PROMO CODE */
+        .promo-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .promo-code-input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #8b4d6b;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .promo-code-input:focus {
+            border-color: #ff1493;
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .apply-promo-btn {
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
+        }
+
+        .apply-promo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.8);
+        }
+
+        .promo-message {
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .promo-message.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .promo-message.error {
+            background: rgba(255, 107, 53, 0.1);
+            color: #ff6b35;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .applied-promo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            margin-top: 10px;
+        }
+
+        .applied-promo-text {
+            color: #10b981;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .remove-promo-btn {
+            background: none;
+            border: none;
+            color: #10b981;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        /* SHIPPING CALCULATOR */
+        .shipping-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .shipping-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .shipping-option:hover {
+            border-color: rgba(255, 20, 147, 0.3);
+            background: rgba(255, 20, 147, 0.05);
+        }
+
+        .shipping-option.selected {
+            border-color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+        }
+
+        .shipping-radio {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ff1493;
+            border-radius: 50%;
+            margin-right: 12px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .shipping-option.selected .shipping-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #ff1493;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .shipping-details {
+            flex: 1;
+        }
+
+        .shipping-name {
+            color: #ff1493;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .shipping-time {
+            color: rgba(139, 77, 107, 0.8);
+            font-size: 12px;
+        }
+
+        .shipping-price {
+            color: #ff1493;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* ORDER SUMMARY */
+        .order-summary {
+            position: sticky;
+            top: 120px;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: rgba(139, 77, 107, 0.9);
+            font-size: 14px;
+        }
+
+        .summary-line.total {
+            border-top: 2px solid rgba(255, 20, 147, 0.2);
+            padding-top: 15px;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff1493;
+        }
+
+        .discount-line {
+            color: #10b981 !important;
+            font-weight: 600;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #ff1493, #ff69b4);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 20, 147, 0.4);
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .checkout-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 0 30px rgba(255, 20, 147, 0.8);
+        }
+
+        .checkout-btn:hover::before {
+            left: 100%;
+        }
+
+        .secure-checkout {
+            text-align: center;
+            margin-top: 15px;
+            color: rgba(139, 77, 107, 0.7);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* TRUST BADGES */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+
+        .trust-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: rgba(139, 77, 107, 0.7);
+            font-size: 10px;
+        }
+
+        .trust-badge-icon {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #10b981;
+        }
+
+        /* RECENTLY VIEWED */
+        .recently-viewed {
+            margin-top: 60px;
+            text-align: center;
+        }
+
+        .recently-title {
+            color: #ff1493;
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .recently-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .recently-item {
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.4), rgba(255, 105, 180, 0.3));
+            border-radius: 15px;
+            padding: 15px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .recently-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 20, 147, 0.3);
+            border-color: #ff1493;
+        }
+
+        .recently-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .recently-name {
+            color: #ff1493;
+            font-weight: 600;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .recently-price {
+            color: #ff69b4;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* MOBILE STYLES */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px;
+                flex-wrap: wrap;
+            }
+
+            .search-container {
+                order: 3;
+                width: 100%;
+                margin: 10px 0;
+                max-width: none;
+            }
+
+            .cart-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 20px 15px;
+            }
+
+            .cart-main {
+                padding: 20px;
+            }
+
+            .cart-item {
+                grid-template-columns: 60px 1fr auto;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .item-image {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .quantity-controls {
+                grid-column: 2 / 4;
+                justify-self: start;
+                margin-top: 10px;
+            }
+
+            .remove-btn {
+                grid-column: 3;
+                grid-row: 1;
+                justify-self: end;
+            }
+
+            .recently-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+
+            .order-summary {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Giant White Fluffy Clouds -->
+    <div class="cloud-bg" id="cloudBg"></div>
+
+    <div class="top-banner">
+        🌸 You bring the vibe, we'll bring the fluff — shipping's on us over Rs. 999!
+    </div>
+
+    <header class="header">
+        <div class="logo">🎀 DevDoll</div>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search cute developer merch..." id="searchBox">
+            <button class="search-btn" id="searchBtn">🔍</button>
+        </div>
+
+        <div class="header-actions">
+            <a href="#" class="back-btn">← Continue Shopping</a>
+        </div>
+    </header>
+
+    <div class="cart-container">
+        <!-- Main Cart Section -->
+        <div class="cart-main">
+            <h1 class="cart-title">
+                🛒 Your Cart
+                <span class="cart-count" id="cartCount">3 items</span>
+            </h1>
+
+            <!-- Cart Items -->
+            <div class="cart-items" id="cartItems">
+                <!-- Sample cart items - will be populated by JavaScript -->
+                <div class="cart-item" data-id="1">
+                    <div class="item-image">🎀</div>
+                    <div class="item-details">
+                        <div class="item-name">Kawaii Developer Tee</div>
+                        <div class="item-options">Size: M, Color: Pink</div>
+                    </div>
+                    <div class="item-price">Rs. 974.25</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" data-action="decrease">−</button>
+                        <input type="number" class="qty-input" value="1" min="1" max="10">
+                        <button class="qty-btn" data-action="increase">+</button>
+                    </div>
+                    <button class="remove-btn" data-action="remove">🗑️</button>
+                </div>
+
+                <div class="cart-item" data-id="2">
+                    <div class="item-image">💖</div>
+                    <div class="item-details">
+                        <div class="item-name">Dream Crop Top</div>
+                        <div class="item-options">Size: S, Color: Purple</div>
+                    </div>
+                    <div class="item-price">Rs. 749.25</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" data-action="decrease">−</button>
+                        <input type="number" class="qty-input" value="2" min="1" max="10">
+                        <button class="qty-btn" data-action="increase">+</button>
+                    </div>
+                    <button class="remove-btn" data-action="remove">🗑️</button>
+                </div>
+
+                <div class="cart-item" data-id="3">
+                    <div class="item-image">🌸</div>
+                    <div class="item-details">
+                        <div class="item-name">Pink Kawaii Hoodie</div>
+                        <div class="item-options">Size: L, Color: Pink</div>
+                    </div>
+                    <div class="item-price">Rs. 1,329.30</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" data-action="decrease">−</button>
+                        <input type="number" class="qty-input" value="1" min="1" max="10">
+                        <button class="qty-btn" data-action="increase">+</button>
+                    </div>
+                    <button class="remove-btn" data-action="remove">🗑️</button>
+                </div>
+            </div>
+
+            <!-- Empty Cart State -->
+            <div class="empty-cart" id="emptyCart" style="display: none;">
+                <div class="empty-cart-icon">🛒</div>
+                <h3>Your cart is empty!</h3>
+                <p>Looks like you haven't added any kawaii items to your cart yet.<br>Let's find some adorable developer merch for you! 💖</p>
+                <a href="#" class="continue-shopping-btn">Start Shopping</a>
+            </div>
+        </div>
+
+        <!-- Cart Sidebar -->
+        <div class="cart-sidebar">
+            <!-- Promo Code Section -->
+            <div class="cart-section">
+                <div class="section-title">🎁 Promo Code</div>
+                <div class="promo-input">
+                    <input type="text" class="promo-code-input" placeholder="Enter promo code" id="promoInput">
+                    <button class="apply-promo-btn" id="applyPromoBtn">Apply</button>
+                </div>
+                <div class="promo-message" id="promoMessage"></div>
+                <div class="applied-promo" id="appliedPromo" style="display: none;">
+                    <span class="applied-promo-text" id="appliedPromoText"></span>
+                    <button class="remove-promo-btn" id="removePromoBtn">✕</button>
+                </div>
+            </div>
+
+            <!-- Shipping Options -->
+            <div class="cart-section">
+                <div class="section-title">🚚 Shipping</div>
+                <div class="shipping-options">
+                    <div class="shipping-option selected" data-shipping="standard">
+                        <div class="shipping-radio"></div>
+                        <div class="shipping-details">
+                            <div class="shipping-name">Standard Shipping</div>
+                            <div class="shipping-time">3-5 business days</div>
+                        </div>
+                        <div class="shipping-price">FREE</div>
+                    </div>
+                    <div class="shipping-option" data-shipping="express">
+                        <div class="shipping-radio"></div>
+                        <div class="shipping-details">
+                            <div class="shipping-name">Express Shipping</div>
+                            <div class="shipping-time">1-2 business days</div>
+                        </div>
+                        <div class="shipping-price">Rs. 199</div>
+                    </div>
+                    <div class="shipping-option" data-shipping="overnight">
+                        <div class="shipping-radio"></div>
+                        <div class="shipping-details">
+                            <div class="shipping-name">Overnight Delivery</div>
+                            <div class="shipping-time">Next business day</div>
+                        </div>
+                        <div class="shipping-price">Rs. 399</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="cart-section order-summary">
+                <div class="section-title">📋 Order Summary</div>
+                <div class="summary-line">
+                    <span>Subtotal (3 items)</span>
+                    <span id="subtotal">Rs. 3,052.80</span>
+                </div>
+                <div class="summary-line">
+                    <span>Shipping</span>
+                    <span id="shippingCost">FREE</span>
+                </div>
+                <div class="summary-line discount-line" id="discountLine" style="display: none;">
+                    <span>Discount</span>
+                    <span id="discountAmount">-Rs. 0</span>
+                </div>
+                <div class="summary-line total">
+                    <span>Total</span>
+                    <span id="totalAmount">Rs. 3,052.80</span>
+                </div>
+
+                <button class="checkout-btn" id="checkoutBtn">
+                    Proceed to Checkout 💖
+                </button>
+
+                <div class="secure-checkout">
+                    🔒 Secure Checkout Guaranteed
+                </div>
+
+                <div class="trust-badges">
+                    <div class="trust-badge">
+                        <div class="trust-badge-icon">🛡️</div>
+                        <div>Secure</div>
+                    </div>
+                    <div class="trust-badge">
+                        <div class="trust-badge-icon">🚚</div>
+                        <div>Fast Ship</div>
+                    </div>
+                    <div class="trust-badge">
+                        <div class="trust-badge-icon">💝</div>
+                        <div>Gift Wrap</div>
+                    </div>
+                    <div class="trust-badge">
+                        <div class="trust-badge-icon">↩️</div>
+                        <div>Easy Returns</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Viewed -->
+    <div class="recently-viewed">
+        <h2 class="recently-title">Recently Viewed</h2>
+        <div class="recently-grid">
+            <div class="recently-item">
+                <span class="recently-icon">✨</span>
+                <div class="recently-name">Sparkle Tee</div>
+                <div class="recently-price">Rs. 959.20</div>
+            </div>
+            <div class="recently-item">
+                <span class="recently-icon">🦄</span>
+                <div class="recently-name">Unicorn Dreams</div>
+                <div class="recently-price">Rs. 1,039.35</div>
+            </div>
+            <div class="recently-item">
+                <span class="recently-icon">🌈</span>
+                <div class="recently-name">Rainbow Bliss</div>
+                <div class="recently-price">Rs. 1,007.28</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample cart data
+        let cartItems = [
+            { id: 1, name: 'Kawaii Developer Tee', price: 974.25, quantity: 1, size: 'M', color: 'Pink', image: '🎀' },
+            { id: 2, name: 'Dream Crop Top', price: 749.25, quantity: 2, size: 'S', color: 'Purple', image: '💖' },
+            { id: 3, name: 'Pink Kawaii Hoodie', price: 1329.30, quantity: 1, size: 'L', color: 'Pink', image: '🌸' }
+        ];
+
+        let appliedPromo = null;
+        let selectedShipping = 'standard';
+        let shippingCosts = {
+            standard: 0,
+            express: 199,
+            overnight: 399
+        };
+
+        // Cloud Background
+        function createFluffyClouds() {
+            const cloudBg = document.getElementById('cloudBg');
+            if (!cloudBg) return;
+            
+            const cloudSymbols = ['☁️'];
+            
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    const column = document.createElement('div');
+                    column.className = 'cloud-column';
+                    column.style.left = Math.random() * 100 + '%';
+                    column.style.animationDuration = (Math.random() * 20 + 15) + 's';
+                    column.style.animationDelay = Math.random() * 8 + 's';
+                    
+                    column.textContent = cloudSymbols[0];
+                    cloudBg.appendChild(column);
+                    
+                    setTimeout(() => {
+                        if (column.parentNode) {
+                            column.remove();
+                        }
+                    }, 35000);
+                }, i * 1000);
+            }
+            
+            setInterval(() => {
+                if (cloudBg.children.length < 3) {
+                    const column = document.createElement('div');
+                    column.className = 'cloud-column';
+                    column.style.left = Math.random() * 100 + '%';
+                    column.style.animationDuration = (Math.random() * 20 + 15) + 's';
+                    
+                    column.textContent = cloudSymbols[0];
+                    cloudBg.appendChild(column);
+                    
+                    setTimeout(() => {
+                        if (column.parentNode) {
+                            column.remove();
+                        }
+                    }, 35000);
+                }
+            }, 8000);
+        }
+
+        // Update cart display
+        function updateCartDisplay() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const emptyCart = document.getElementById('emptyCart');
+            const cartCount = document.getElementById('cartCount');
+
+            if (cartItems.length === 0) {
+                cartItemsContainer.style.display = 'none';
+                emptyCart.style.display = 'block';
+                cartCount.textContent = '0 items';
+                return;
+            }
+
+            cartItemsContainer.style.display = 'block';
+            emptyCart.style.display = 'none';
+            cartCount.textContent = `${cartItems.length} item${cartItems.length !== 1 ? 's' : ''}`;
+
+            cartItemsContainer.innerHTML = cartItems.map(item => `
+                <div class="cart-item" data-id="${item.id}">
+                    <div class="item-image">${item.image}</div>
+                    <div class="item-details">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-options">Size: ${item.size}, Color: ${item.color}</div>
+                    </div>
+                    <div class="item-price">Rs. ${item.price.toFixed(2)}</div>
+                    <div class="quantity-controls">
+                        <button class="qty-btn" data-action="decrease" data-id="${item.id}">−</button>
+                        <input type="number" class="qty-input" value="${item.quantity}" min="1" max="10" data-id="${item.id}">
+                        <button class="qty-btn" data-action="increase" data-id="${item.id}">+</button>
+                    </div>
+                    <button class="remove-btn" data-action="remove" data-id="${item.id}">🗑️</button>
+                </div>
+            `).join('');
+
+            updateOrderSummary();
+        }
+
+        // Update order summary
+        function updateOrderSummary() {
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = shippingCosts[selectedShipping];
+            let discount = 0;
+
+            if (appliedPromo) {
+                if (appliedPromo.type === 'percentage') {
+                    discount = subtotal * (appliedPromo.value / 100);
+                } else {
+                    discount = appliedPromo.value;
+                }
+            }
+
+            const total = subtotal + shipping - discount;
+
+            document.getElementById('subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
+            document.getElementById('shippingCost').textContent = shipping === 0 ? 'FREE' : `Rs. ${shipping.toFixed(2)}`;
+            document.getElementById('totalAmount').textContent = `Rs. ${total.toFixed(2)}`;
+
+            const discountLine = document.getElementById('discountLine');
+            if (discount > 0) {
+                discountLine.style.display = 'flex';
+                document.getElementById('discountAmount').textContent = `-Rs. ${discount.toFixed(2)}`;
+            } else {
+                discountLine.style.display = 'none';
+            }
+        }
+
+        // Quantity controls
+        function setupQuantityControls() {
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('qty-btn')) {
+                    const action = e.target.dataset.action;
+                    const itemId = parseInt(e.target.dataset.id);
+                    const item = cartItems.find(i => i.id === itemId);
+
+                    if (action === 'increase' && item.quantity < 10) {
+                        item.quantity++;
+                    } else if (action === 'decrease' && item.quantity > 1) {
+                        item.quantity--;
+                    }
+
+                    updateCartDisplay();
+                    showNotification(`Updated ${item.name} quantity to ${item.quantity} 💖`);
+                }
+
+                if (e.target.classList.contains('remove-btn')) {
+                    const itemId = parseInt(e.target.dataset.id);
+                    const item = cartItems.find(i => i.id === itemId);
+                    cartItems = cartItems.filter(i => i.id !== itemId);
+                    
+                    updateCartDisplay();
+                    showNotification(`Removed ${item.name} from cart 💔`);
+                    createSparkleExplosion();
+                }
+            });
+
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('qty-input')) {
+                    const itemId = parseInt(e.target.dataset.id);
+                    const item = cartItems.find(i => i.id === itemId);
+                    const newQuantity = parseInt(e.target.value);
+
+                    if (newQuantity >= 1 && newQuantity <= 10) {
+                        item.quantity = newQuantity;
+                        updateCartDisplay();
+                        showNotification(`Updated ${item.name} quantity to ${newQuantity} 💖`);
+                    } else {
+                        e.target.value = item.quantity;
+                    }
+                }
+            });
+        }
+
+        // Promo code functionality
+        function setupPromoCode() {
+            const validPromoCodes = {
+                'DOLLMEUP70': { type: 'percentage', value: 70, description: '70% OFF Everything!' },
+                'KAWAII50': { type: 'percentage', value: 50, description: '50% OFF Kawaii Items!' },
+                'SAVE200': { type: 'fixed', value: 200, description: 'Rs. 200 OFF Your Order!' },
+                'WELCOME25': { type: 'percentage', value: 25, description: '25% OFF Welcome Deal!' }
+            };
+
+            document.getElementById('applyPromoBtn').addEventListener('click', function() {
+                const promoInput = document.getElementById('promoInput');
+                const code = promoInput.value.trim().toUpperCase();
+                const promoMessage = document.getElementById('promoMessage');
+
+                if (!code) {
+                    showPromoMessage('Please enter a promo code! 💕', 'error');
+                    return;
+                }
+
+                if (validPromoCodes[code]) {
+                    appliedPromo = validPromoCodes[code];
+                    showPromoMessage(`🎉 Promo code applied! ${appliedPromo.description}`, 'success');
+                    
+                    document.getElementById('appliedPromo').style.display = 'flex';
+                    document.getElementById('appliedPromoText').textContent = `${code} - ${appliedPromo.description}`;
+                    
+                    promoInput.value = '';
+                    updateOrderSummary();
+                    createSparkleExplosion();
+                } else {
+                    showPromoMessage('Invalid promo code. Try DOLLMEUP70! 💔', 'error');
+                }
+            });
+
+            document.getElementById('removePromoBtn').addEventListener('click', function() {
+                appliedPromo = null;
+                document.getElementById('appliedPromo').style.display = 'none';
+                showPromoMessage('Promo code removed 💔', 'error');
+                updateOrderSummary();
+            });
+
+            // Enter key support
+            document.getElementById('promoInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('applyPromoBtn').click();
+                }
+            });
+        }
+
+        function showPromoMessage(message, type) {
+            const promoMessage = document.getElementById('promoMessage');
+            promoMessage.textContent = message;
+            promoMessage.className = `promo-message ${type}`;
+            promoMessage.style.display = 'block';
+
+            setTimeout(() => {
+                promoMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        // Shipping options
+        function setupShipping() {
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.shipping-option')) {
+                    const option = e.target.closest('.shipping-option');
+                    const shipping = option.dataset.shipping;
+
+                    document.querySelectorAll('.shipping-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    option.classList.add('selected');
+
+                    selectedShipping = shipping;
+                    updateOrderSummary();
+                    
+                    const shippingNames = {
+                        standard: 'Standard Shipping',
+                        express: 'Express Shipping', 
+                        overnight: 'Overnight Delivery'
+                    };
+                    
+                    showNotification(`Selected ${shippingNames[shipping]} 🚚`);
+                }
+            });
+        }
+
+        // Checkout functionality
+        function setupCheckout() {
+            document.getElementById('checkoutBtn').addEventListener('click', function() {
+                if (cartItems.length === 0) {
+                    showNotification('Your cart is empty! Add some kawaii items first! 💖');
+                    return;
+                }
+
+                const total = document.getElementById('totalAmount').textContent;
+                showNotification(`🎉 Proceeding to checkout for ${total}! Payment page coming soon! 💳✨`);
+                createSparkleExplosion();
+            });
+        }
+
+        // Notifications
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(45deg, #ff1493, #ff69b4);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                font-weight: 600;
+                box-shadow: 0 0 30px rgba(255, 20, 147, 0.8);
+                z-index: 10000;
+                animation: slideInRight 0.5s ease-out;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                max-width: 300px;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease-in forwards';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        // Sparkle effects
+        function createSparkle(x, y) {
+            const sparkle = document.createElement('div');
+            sparkle.innerHTML = '✨';
+            sparkle.style.position = 'fixed';
+            sparkle.style.left = x + 'px';
+            sparkle.style.top = y + 'px';
+            sparkle.style.pointerEvents = 'none';
+            sparkle.style.fontSize = '20px';
+            sparkle.style.color = '#ff69b4';
+            sparkle.style.zIndex = '9999';
+            sparkle.style.animation = 'sparkleFloat 2s ease-out forwards';
+            
+            document.body.appendChild(sparkle);
+            
+            setTimeout(() => {
+                sparkle.remove();
+            }, 2000);
+        }
+
+        function createSparkleExplosion() {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    createSparkle(
+                        Math.random() * window.innerWidth,
+                        Math.random() * window.innerHeight
+                    );
+                }, i * 100);
+            }
+        }
+
+        // CSS Animations
+        const styles = document.createElement('style');
+        styles.textContent = `
+            @keyframes sparkleFloat {
+                0% {
+                    transform: translateY(0) scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100px) scale(0) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes slideInRight {
+                0% {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideOutRight {
+                0% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(styles);
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            createFluffyClouds();
+            updateCartDisplay();
+            setupQuantityControls();
+            setupPromoCode();
+            setupShipping();
+            setupCheckout();
+
+            // Search functionality
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                const query = document.getElementById('searchBox').value.trim();
+                if (query) {
+                    showNotification(`🔍 Searching for "${query}"... Coming soon! 💕`);
+                }
+            });
+
+            console.log('🛒 Cart page loaded with all kawaii features! 💖');
+        });
+    </script>
+</body>
+</html>
